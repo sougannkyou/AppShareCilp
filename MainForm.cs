@@ -39,7 +39,7 @@ namespace NiceClip
                 this.clipboardHistoryList.SetSelected(0, true);
             clipboardHistoryList.Select();
 
-            // this.TopMost = true;
+            // this.TopMost = true; // 总在最前
 
             this.myIP = this.GetIP();
 
