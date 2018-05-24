@@ -87,8 +87,7 @@ namespace NiceClip
                     if (m.WParam == nextClipboardViewer)
                         nextClipboardViewer = m.LParam;
                     else
-                        SendMessage(nextClipboardViewer, m.Msg, m.WParam,
-                                    m.LParam);
+                        SendMessage(nextClipboardViewer, m.Msg, m.WParam, m.LParam);
                     break;
                 default:
                     base.WndProc(ref m);
