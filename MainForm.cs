@@ -142,7 +142,7 @@ namespace NiceClip
                             Console.WriteLine(e);
                         }
                         
-                        //*/
+                        //*/ syq
                         clipboardHistoryList.Items.Insert(0, clipboardText);
                         this.copyCnt++;
                         toolStripStatusLabel.Text = "copy link: " + this.copyCnt.ToString();
