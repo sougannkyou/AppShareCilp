@@ -110,7 +110,7 @@ namespace NiceClip
                 }
             }
             Console.WriteLine("myIP:"+ip);
-            label1.Text = "local:" + ip + " >>> redis:" + Environment.GetEnvironmentVariable("REDIS_SERVER_IP");
+            label1.Text = "form:" + ip + " >>> to:" + Environment.GetEnvironmentVariable("REDIS_SERVER_IP");
             return ip;
         }
 
