@@ -30,6 +30,7 @@ namespace NiceClip
         bool isCopying = false;
         string myIP = "127.0.0.1";
         int copyCnt = 0;
+        int copyErrorCnt = 0;
 
         public MainForm()
         {
@@ -133,17 +134,19 @@ namespace NiceClip
                             string redisServerIP = Environment.GetEnvironmentVariable("REDIS_SERVER_IP");
                             RedisClient Client = new RedisClient(redisServerIP, 6379);
                             Client.ChangeDb(11);
-                            Client.AddItemToSet(this.myIP, clipboardText);
-                            Client.AddItemToSet(this.myIP + "_org", clipboardText);
+                            Client.AddItemToSet("devices:" + this.myIP, clipboardText);
+                            Client.AddItemToSet("devices:" + this.myIP + "_org", clipboardText);
+                            clipboardHistoryList.Items.Insert(0, clipboardText);
+                            this.copyCnt++;
+                            toolStripStatusLabel.Text = "copy success: " + this.copyCnt.ToString();
                         }
                         catch (Exception e)
                         {
+                            this.copyErrorCnt++;
+                            toolStripStatusLabel.Text = "copy failure: " + this.copyErrorCnt.ToString();
                             Console.WriteLine(e);
                         }
-                        
-                        clipboardHistoryList.Items.Insert(0, clipboardText);
-                        this.copyCnt++;
-                        toolStripStatusLabel.Text = "copy link: " + this.copyCnt.ToString();
+                       
                         deleteButton.Enabled = true;
                     }
                 }
