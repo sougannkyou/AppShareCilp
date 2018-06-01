@@ -111,8 +111,10 @@ namespace NiceClip
                     break;
                 }
             }
-            Console.WriteLine("myIP:"+ip);
-            label1.Text = "form:" + ip + " >>> to:" + Environment.GetEnvironmentVariable("REDIS_SERVER_IP");
+            Environment.SetEnvironmentVariable("CLIPBOARD_IP", ip);
+            Console.WriteLine("myIP:" + ip);
+            string appName = Environment.GetEnvironmentVariable("APPSIMULATOR_APP_NAME");
+            label1.Text = "<< " + appName + " >>" + " form:" + ip + " >>> to:" + Environment.GetEnvironmentVariable("REDIS_SERVER_IP");
             return ip;
         }
 
@@ -132,11 +134,14 @@ namespace NiceClip
                         clipboardText = clipboardText.Substring(clipboardText.LastIndexOf("http"));
                         try
                         {
+                            string appName = Environment.GetEnvironmentVariable("APPSIMULATOR_APP_NAME");
+                            Console.WriteLine("appName:" + appName);
                             string redisServerIP = Environment.GetEnvironmentVariable("REDIS_SERVER_IP");
                             RedisClient Client = new RedisClient(redisServerIP, 6379);
                             Client.ChangeDb(11);
-                            Client.AddItemToSet("devices:" + this.myIP, clipboardText);
-                            Client.AddItemToSet("devices:" + this.myIP + "_org", clipboardText);
+                            Console.WriteLine("devices:" + appName + ":" + this.myIP + "_org");
+                            Client.AddItemToSet("devices:" + appName + ":" + this.myIP, clipboardText);
+                            Client.AddItemToSet("devices:" + appName + ":" + this.myIP + "_org", clipboardText);
                             clipboardHistoryList.Items.Insert(0, clipboardText);
                             this.copyCnt++;
                         }
