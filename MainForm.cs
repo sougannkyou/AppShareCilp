@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Text;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -11,12 +12,19 @@ namespace NiceClip
     {
         [DllImport("User32.dll")]
         protected static extern int SetClipboardViewer(int hWndNewViewer);
+
         [DllImport("User32.dll", CharSet = CharSet.Auto)]
         public static extern bool ChangeClipboardChain(IntPtr hWndRemove, IntPtr hWndNewNext);
+
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern int SendMessage(IntPtr hwnd, int wMsg, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString,int nMaxCount);
+
         [DllImport("kernel32")]
         private static extern long WritePrivateProfileString(string section, string key, string val, string filePath);
+
         [DllImport("kernel32")]
         private static extern int GetPrivateProfileString(string section, string key, string def, System.Text.StringBuilder retVal, int size, string filePath);
 
@@ -69,6 +77,11 @@ namespace NiceClip
             base.OnHandleCreated(e);
         }
 
+        static Int64 GetTimeStamp()
+        {
+            TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            return Convert.ToInt64(ts.TotalSeconds);
+        }
         /// <summary>
         /// Takes care of the external DLL calls to user32 to receive notification when
         /// the clipboard is modified. Passes along notifications to any other process that
@@ -76,16 +89,48 @@ namespace NiceClip
         /// </summary>
         protected override void WndProc(ref System.Windows.Forms.Message m)
         {
-            const int WM_DRAWCLIPBOARD = 0x308;
+            const int WM_DRAWCLIPBOARD = 0x308; // 776
             const int WM_CHANGECBCHAIN = 0x030D;
+            const int WM_LBUTTONDBLCLK = 0x0203;
+            const int WM_LBUTTONDOWN = 0x0201;
+            const int WM_COPY = 0x301;
+            // const int WM_PASTE = 0x302;
 
             switch (m.Msg)
             {
+                case WM_COPY:
+                    StringBuilder buf0 = new StringBuilder(256);
+                    if (GetWindowText(m.HWnd, buf0, 256) > 0)
+                    {
+                        Console.WriteLine(buf0.ToString());
+                    }
+                    break;
+                case WM_LBUTTONDBLCLK:
+                    Console.WriteLine(m.Msg);
+                    break;
+                case WM_LBUTTONDOWN:
+                    Console.WriteLine(m.Msg);
+                    break;
                 case WM_DRAWCLIPBOARD:
                     if (!isCopying)
-                        AddClipBoardEntry();
+                    {
+                        Int64 timeStamp = GetTimeStamp();
+                        AddClipBoardEntry(timeStamp);
+                    }
+                    ///*
+                    StringBuilder buf1 = new StringBuilder(256);
+                    if (GetWindowText(m.HWnd, buf1, 256) > 0)
+                    {
+                        Console.WriteLine(buf1.ToString());
+                    }
+                    //*/
                     break;
                 case WM_CHANGECBCHAIN:
+                    StringBuilder buf2 = new StringBuilder(256);
+                    if (GetWindowText(m.HWnd, buf2, 256) > 0)
+                    {
+                        Console.WriteLine(buf2.ToString());
+                    }
                     if (m.WParam == nextClipboardViewer)
                         nextClipboardViewer = m.LParam;
                     else
@@ -121,7 +166,7 @@ namespace NiceClip
         /// <summary>
         /// Adds a clipboard history to the clipboard history list.
         /// </summary>
-        private void AddClipBoardEntry()
+        private void AddClipBoardEntry(Int64 timeStamp)
         {
             if (Clipboard.ContainsText())
             {
@@ -142,6 +187,7 @@ namespace NiceClip
                             Console.WriteLine("devices:" + appName + ":" + this.myIP + "_org");
                             Client.AddItemToSet("devices:" + appName + ":" + this.myIP, clipboardText);
                             Client.AddItemToSet("devices:" + appName + ":" + this.myIP + "_org", clipboardText);
+                            Client.AddItemToList("devices:" + appName + ":" + this.myIP + "_org", timeStamp.ToString());
                             clipboardHistoryList.Items.Insert(0, clipboardText);
                             this.copyCnt++;
                         }
