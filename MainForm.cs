@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Drawing;
 using System.Text;
 using System.Net;
@@ -30,16 +31,24 @@ namespace AppShareClip
 
 
         IntPtr nextClipboardViewer;
-        NotifyIcon niceClipIcon;
-        Icon niceClipIconImage;
+        NotifyIcon AppShareClipIcon;
+        Icon AppShareClipIconImage;
         ContextMenu contextMenu = new ContextMenu();
 
         bool reallyQuit = false;
         bool isCopying = false;
-        string myIP = "127.0.0.1";
+        string localIP = "127.0.0.1";
+        string workPath = Environment.GetEnvironmentVariable("APPSIMULATOR_WORK_PATH");
         int copyCnt = 0;
         int copyErrorCnt = 0;
         DateTime startTime = DateTime.Now;
+
+
+        public string GetTimerNo()
+        {
+            string timerNo = File.ReadAllText(this.workPath + "\\Controller\\timerNo.conf");
+            return timerNo;
+        }
 
         public MainForm()
         {
@@ -51,12 +60,12 @@ namespace AppShareClip
 
             // this.TopMost = true; // 总在最前
 
-            this.myIP = this.GetIP();
+            this.localIP = this.GetLocalIP();
 
-            niceClipIconImage = Properties.Resources.clipboard;
-            niceClipIcon = new NotifyIcon
+            AppShareClipIconImage = Properties.Resources.clipboard;
+            AppShareClipIcon = new NotifyIcon
             {
-                Icon = niceClipIconImage,
+                Icon = AppShareClipIconImage,
                 Visible = true
             };
 
@@ -66,7 +75,7 @@ namespace AppShareClip
             this.contextMenu.MenuItems.Add("-");
             this.contextMenu.MenuItems.Add(quitMenuItem);
 
-            niceClipIcon.ContextMenu = contextMenu;
+            AppShareClipIcon.ContextMenu = contextMenu;
 
             quitMenuItem.Click += QuitMenuItem_Click;
             showFormItem.Click += ShowForm;
@@ -89,10 +98,8 @@ namespace AppShareClip
         /// </summary>
         protected override void WndProc(ref System.Windows.Forms.Message m)
         {
-            const int WM_DRAWCLIPBOARD = 0x308; // 776
+            const int WM_DRAWCLIPBOARD = 0x308;
             const int WM_CHANGECBCHAIN = 0x030D;
-            const int WM_LBUTTONDBLCLK = 0x0203;
-            const int WM_LBUTTONDOWN = 0x0201;
             // const int WM_CLIPBOARDUPDATE = 0x031D;
             const int WM_COPY = 0x301;
             // const int WM_PASTE = 0x302;
@@ -106,33 +113,23 @@ namespace AppShareClip
                         Console.WriteLine(buf0.ToString());
                     }
                     break;
-                case WM_LBUTTONDBLCLK:
-                    //Console.WriteLine(m.Msg);
-                    break;
-                case WM_LBUTTONDOWN:
-                    //Console.WriteLine(m.Msg);
-                    break;
                 case WM_DRAWCLIPBOARD:
                     if (!isCopying)
                     {
                         Int64 timeStamp = GetTimeStamp();
-                        string dockerName = Environment.GetEnvironmentVariable("DOCKER_NAME");
-                        Console.WriteLine(dockerName + ": " + (timeStamp).ToString());
                         AddClipBoardEntry(timeStamp);
                     }
-                    ///*
-                    StringBuilder buf1 = new StringBuilder(256);
-                    if (GetWindowText(m.HWnd, buf1, 256) > 0)
+                    StringBuilder sb = new StringBuilder(256);
+                    if (GetWindowText(m.HWnd, sb, 256) > 0)
                     {
-                        Console.WriteLine(buf1.ToString());
+                        Console.WriteLine(sb.ToString());
                     }
-                    //*/
                     break;
                 case WM_CHANGECBCHAIN:
-                    StringBuilder buf2 = new StringBuilder(256);
-                    if (GetWindowText(m.HWnd, buf2, 256) > 0)
+                    StringBuilder sb1 = new StringBuilder(256);
+                    if (GetWindowText(m.HWnd, sb1, 256) > 0)
                     {
-                        Console.WriteLine(buf2.ToString());
+                        Console.WriteLine(sb1.ToString());
                     }
                     if (m.WParam == nextClipboardViewer)
                         nextClipboardViewer = m.LParam;
@@ -144,7 +141,7 @@ namespace AppShareClip
                     break;
             }
         }
-        private string GetIP()
+        private string GetLocalIP()
         {
             string strHostName = "";
             string ip = "";
@@ -182,14 +179,15 @@ namespace AppShareClip
                         clipboardText = clipboardText.Substring(clipboardText.LastIndexOf("http"));
                         try
                         {
+                            string timerNo = GetTimerNo();
+                            Console.WriteLine("<<timerNo>> " + timerNo);
                             string appName = Environment.GetEnvironmentVariable("APPSIMULATOR_APP_NAME");
-                            //Console.WriteLine("appName:" + appName);
+                            //Console.WriteLine("<<appName>> " + appName);
                             string redisServerIP = Environment.GetEnvironmentVariable("REDIS_SERVER_IP");
                             RedisClient Client = new RedisClient(redisServerIP, 6379);
                             Client.ChangeDb(11);
-                            //Console.WriteLine("devices:" + appName + ":" + this.myIP + "_org");
-                            Client.AddItemToSet("devices:" + appName + ":" + this.myIP, clipboardText);
-                            Client.AddItemToSet("devices:" + appName + ":" + this.myIP + "_org", clipboardText);
+                            Client.AddItemToSet("devices:" + this.localIP + ":" + timerNo, clipboardText);
+                            Client.AddItemToSet("devices:" + this.localIP + "_org:" + timerNo, clipboardText);
                             // Client.AddItemToList("devices:" + appName + ":" + this.myIP + "_org", timeStamp.ToString());
                             clipboardHistoryList.Items.Insert(0, clipboardText);
                             this.copyCnt++;
@@ -340,7 +338,7 @@ namespace AppShareClip
             toolStripStatusLabel.Text = "Clearing clipboard history...";
             ClearClipboardHistory();
             toolStripStatusLabel.Text = "Exiting...";
-            niceClipIcon.Dispose();
+            AppShareClipIcon.Dispose();
             Environment.Exit(0);
         }
 
@@ -396,7 +394,7 @@ namespace AppShareClip
 
         /// <summary>
         /// If the user clicks the "X" in the window frame, 'reallyQuit' is going to be false;
-        /// hence, NiceClip will be sent to tray.
+        /// hence, AppShareClip will be sent to tray.
         /// </summary>
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
