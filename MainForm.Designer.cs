@@ -181,7 +181,7 @@
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(200, 278);
             this.Name = "MainForm";
-            this.Text = "NiceClip a0.0.1";
+            this.Text = "AppShareClip";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);

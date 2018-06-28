@@ -13,7 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>G:\Google Drive\NIceClip\release\</PublishUrl>
+    <PublishUrl>G:\Google Drive\AppShareClip\release\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -23,10 +23,10 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <SupportUrl>https://github.com/Gaboik/NiceClip</SupportUrl>
-    <ErrorReportUrl>https://github.com/Gaboik/NiceClip</ErrorReportUrl>
+    <SupportUrl>https://github.com/Gaboik/AppShareClip</SupportUrl>
+    <ErrorReportUrl>https://github.com/Gaboik/AppShareClip</ErrorReportUrl>
     <TargetCulture>en-CA</TargetCulture>
-    <ProductName>NiceClip</ProductName>
+    <ProductName>AppShareClip</ProductName>
     <PublisherName>Gabriel Cardinal</PublisherName>
     <AutorunEnabled>true</AutorunEnabled>
     <ApplicationRevision>1</ApplicationRevision>
@@ -59,7 +59,7 @@
     <ManifestCertificateThumbprint>ED280240B00A851AC783CB6C1EF4353D1FEC21D1</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>NiceClip_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>AppShareClip_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
