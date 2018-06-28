@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using ServiceStack.Redis;
 
-namespace NiceClip
+namespace AppShareClip
 {
     public partial class MainForm : Form
     {
@@ -61,7 +61,7 @@ namespace NiceClip
             };
 
             MenuItem quitMenuItem = new MenuItem("Quit");
-            MenuItem showFormItem = new MenuItem("NiceClip");
+            MenuItem showFormItem = new MenuItem("AppShareClip");
             this.contextMenu.MenuItems.Add(showFormItem);
             this.contextMenu.MenuItems.Add("-");
             this.contextMenu.MenuItems.Add(quitMenuItem);
@@ -80,7 +80,7 @@ namespace NiceClip
         static Int64 GetTimeStamp()
         {
             TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
-            return Convert.ToInt64(ts.TotalSeconds);
+            return Convert.ToInt64(ts.TotalMilliseconds);
         }
         /// <summary>
         /// Takes care of the external DLL calls to user32 to receive notification when
@@ -93,6 +93,7 @@ namespace NiceClip
             const int WM_CHANGECBCHAIN = 0x030D;
             const int WM_LBUTTONDBLCLK = 0x0203;
             const int WM_LBUTTONDOWN = 0x0201;
+            // const int WM_CLIPBOARDUPDATE = 0x031D;
             const int WM_COPY = 0x301;
             // const int WM_PASTE = 0x302;
 
@@ -106,15 +107,17 @@ namespace NiceClip
                     }
                     break;
                 case WM_LBUTTONDBLCLK:
-                    Console.WriteLine(m.Msg);
+                    //Console.WriteLine(m.Msg);
                     break;
                 case WM_LBUTTONDOWN:
-                    Console.WriteLine(m.Msg);
+                    //Console.WriteLine(m.Msg);
                     break;
                 case WM_DRAWCLIPBOARD:
                     if (!isCopying)
                     {
                         Int64 timeStamp = GetTimeStamp();
+                        string dockerName = Environment.GetEnvironmentVariable("DOCKER_NAME");
+                        Console.WriteLine(dockerName + ": " + (timeStamp).ToString());
                         AddClipBoardEntry(timeStamp);
                     }
                     ///*
@@ -157,7 +160,7 @@ namespace NiceClip
                 }
             }
             Environment.SetEnvironmentVariable("CLIPBOARD_IP", ip);
-            Console.WriteLine("myIP:" + ip);
+            //Console.WriteLine("myIP:" + ip);
             string appName = Environment.GetEnvironmentVariable("APPSIMULATOR_APP_NAME");
             label1.Text = "<< " + appName + " >>" + " form:" + ip + " >>> to:" + Environment.GetEnvironmentVariable("REDIS_SERVER_IP");
             return ip;
@@ -180,14 +183,14 @@ namespace NiceClip
                         try
                         {
                             string appName = Environment.GetEnvironmentVariable("APPSIMULATOR_APP_NAME");
-                            Console.WriteLine("appName:" + appName);
+                            //Console.WriteLine("appName:" + appName);
                             string redisServerIP = Environment.GetEnvironmentVariable("REDIS_SERVER_IP");
                             RedisClient Client = new RedisClient(redisServerIP, 6379);
                             Client.ChangeDb(11);
-                            Console.WriteLine("devices:" + appName + ":" + this.myIP + "_org");
+                            //Console.WriteLine("devices:" + appName + ":" + this.myIP + "_org");
                             Client.AddItemToSet("devices:" + appName + ":" + this.myIP, clipboardText);
                             Client.AddItemToSet("devices:" + appName + ":" + this.myIP + "_org", clipboardText);
-                            Client.AddItemToList("devices:" + appName + ":" + this.myIP + "_org", timeStamp.ToString());
+                            // Client.AddItemToList("devices:" + appName + ":" + this.myIP + "_org", timeStamp.ToString());
                             clipboardHistoryList.Items.Insert(0, clipboardText);
                             this.copyCnt++;
                         }
@@ -455,7 +458,7 @@ namespace NiceClip
         }
         #endregion
 
-        private void deleteButton_Click(object sender, EventArgs e)
+        private void DeleteButton_Click(object sender, EventArgs e)
         {
             RemoveSelectedEntry();
         }
