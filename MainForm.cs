@@ -159,7 +159,8 @@ namespace AppShareClip
             Environment.SetEnvironmentVariable("CLIPBOARD_IP", ip);
             //Console.WriteLine("myIP:" + ip);
             string appName = Environment.GetEnvironmentVariable("APPSIMULATOR_APP_NAME");
-            label1.Text = "<< " + appName + " >>" + " form:" + ip + " >>> to:" + Environment.GetEnvironmentVariable("REDIS_SERVER_IP");
+            string redisServer = Environment.GetEnvironmentVariable("REDIS_SERVER_IP");
+            label1.Text = " form:" + ip + " >> to:" + redisServer;
             return ip;
         }
 
