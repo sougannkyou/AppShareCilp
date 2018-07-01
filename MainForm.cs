@@ -117,7 +117,8 @@ namespace AppShareClip
                     if (!isCopying)
                     {
                         Int64 timeStamp = GetTimeStamp();
-                        AddClipBoardEntry(timeStamp);
+                        string timerNo = GetTimerNo();
+                        AddClipBoardEntry(timeStamp,timerNo);
                     }
                     StringBuilder sb = new StringBuilder(256);
                     if (GetWindowText(m.HWnd, sb, 256) > 0)
@@ -167,8 +168,10 @@ namespace AppShareClip
         /// <summary>
         /// Adds a clipboard history to the clipboard history list.
         /// </summary>
-        private void AddClipBoardEntry(Int64 timeStamp)
+        private void AddClipBoardEntry(Int64 timeStamp, string timerNo)
         {
+            Console.WriteLine("<<timerNo>> " + timerNo);
+            Console.WriteLine("<<timeStamp>> " + timeStamp.ToString());
             if (Clipboard.ContainsText())
             {
                 string clipboardText = Clipboard.GetText();
@@ -180,8 +183,6 @@ namespace AppShareClip
                         clipboardText = clipboardText.Substring(clipboardText.LastIndexOf("http"));
                         try
                         {
-                            string timerNo = GetTimerNo();
-                            Console.WriteLine("<<timerNo>> " + timerNo);
                             string appName = Environment.GetEnvironmentVariable("APPSIMULATOR_APP_NAME");
                             //Console.WriteLine("<<appName>> " + appName);
                             string redisServerIP = Environment.GetEnvironmentVariable("REDIS_SERVER_IP");
