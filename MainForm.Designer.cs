@@ -53,7 +53,7 @@
             this.toolStripStatusLabel.Margin = new System.Windows.Forms.Padding(3, 3, 0, 2);
             this.toolStripStatusLabel.Name = "toolStripStatusLabel";
             this.toolStripStatusLabel.Size = new System.Drawing.Size(44, 17);
-            this.toolStripStatusLabel.Text = "Ready";
+            this.toolStripStatusLabel.Text = "启动完成";
             // 
             // toolStripStatusLabel1
             // 
@@ -66,7 +66,7 @@
             this.toolStripEntryLabel.Margin = new System.Windows.Forms.Padding(0, 3, 10, 2);
             this.toolStripEntryLabel.Name = "toolStripEntryLabel";
             this.toolStripEntryLabel.Size = new System.Drawing.Size(111, 17);
-            this.toolStripEntryLabel.Text = "No entry selected";
+            this.toolStripEntryLabel.Text = "没有选择任何内容";
             this.toolStripEntryLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.toolStripEntryLabel.ToolTipText = "Indicates which clipboard entry is selected in the list";
             // 
@@ -112,7 +112,7 @@
             this.clearButton.Name = "clearButton";
             this.clearButton.Size = new System.Drawing.Size(50, 21);
             this.clearButton.TabIndex = 5;
-            this.clearButton.Text = "Clear";
+            this.clearButton.Text = "清除";
             this.clearButton.UseVisualStyleBackColor = true;
             this.clearButton.Click += new System.EventHandler(this.GoDownButton_Click);
             // 
@@ -137,7 +137,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(107, 12);
             this.label1.TabIndex = 8;
-            this.label1.Text = "Clipboard History";
+            this.label1.Text = "剪贴板历史信息";
             // 
             // clearHistoryButton
             // 
@@ -146,7 +146,7 @@
             this.clearHistoryButton.Name = "clearHistoryButton";
             this.clearHistoryButton.Size = new System.Drawing.Size(50, 42);
             this.clearHistoryButton.TabIndex = 9;
-            this.clearHistoryButton.Text = "Delete History";
+            this.clearHistoryButton.Text = "删除历史信息";
             this.clearHistoryButton.UseVisualStyleBackColor = true;
             this.clearHistoryButton.Click += new System.EventHandler(this.ClearHistoryButton_Click);
             // 
@@ -157,7 +157,7 @@
             this.deleteButton.Name = "deleteButton";
             this.deleteButton.Size = new System.Drawing.Size(50, 19);
             this.deleteButton.TabIndex = 10;
-            this.deleteButton.Text = "Delete";
+            this.deleteButton.Text = "删除";
             this.deleteButton.UseVisualStyleBackColor = true;
             this.deleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
             // 
@@ -181,7 +181,7 @@
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(200, 278);
             this.Name = "MainForm";
-            this.Text = "AppShareClip";
+            this.Text = "分享链接";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);

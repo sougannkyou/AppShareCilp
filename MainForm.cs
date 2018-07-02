@@ -39,6 +39,7 @@ namespace AppShareClip
         bool isCopying = false;
         string localIP = "127.0.0.1";
         string workPath = Environment.GetEnvironmentVariable("APPSIMULATOR_WORK_PATH");
+        string redisServerIP = Environment.GetEnvironmentVariable("REDIS_SERVER_IP");
         int copyCnt = 0;
         int copyErrorCnt = 0;
         DateTime startTime = DateTime.Now;
@@ -47,6 +48,13 @@ namespace AppShareClip
         public string GetTimerNo()
         {
             string timerNo = File.ReadAllText(this.workPath + "\\Controller\\timerNo.conf");
+
+            TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            Int64 timeStamp = Convert.ToInt64(ts.TotalMilliseconds);
+            DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1));
+            long mTime = long.Parse(timeStamp + "0000");
+            TimeSpan toNow = new TimeSpan(mTime);
+            Console.WriteLine("<<GetTimerNo>>" + startTime.Add(toNow).ToString("HH:mm:ss ffff"));
             return timerNo;
         }
 
@@ -58,7 +66,7 @@ namespace AppShareClip
                 this.clipboardHistoryList.SetSelected(0, true);
             clipboardHistoryList.Select();
 
-            // this.TopMost = true; // 总在最前
+            this.TopMost = false; // 总在最前
 
             this.localIP = this.GetLocalIP();
 
@@ -91,28 +99,17 @@ namespace AppShareClip
             TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
             return Convert.ToInt64(ts.TotalMilliseconds);
         }
-        /// <summary>
-        /// Takes care of the external DLL calls to user32 to receive notification when
-        /// the clipboard is modified. Passes along notifications to any other process that
-        /// is subscribed to the event notification chain.
-        /// </summary>
+
         protected override void WndProc(ref System.Windows.Forms.Message m)
         {
             const int WM_DRAWCLIPBOARD = 0x308;
             const int WM_CHANGECBCHAIN = 0x030D;
             // const int WM_CLIPBOARDUPDATE = 0x031D;
-            const int WM_COPY = 0x301;
+            // const int WM_COPY = 0x301;
             // const int WM_PASTE = 0x302;
 
             switch (m.Msg)
             {
-                case WM_COPY:
-                    StringBuilder buf0 = new StringBuilder(256);
-                    if (GetWindowText(m.HWnd, buf0, 256) > 0)
-                    {
-                        Console.WriteLine(buf0.ToString());
-                    }
-                    break;
                 case WM_DRAWCLIPBOARD:
                     if (!isCopying)
                     {
@@ -157,41 +154,39 @@ namespace AppShareClip
                     break;
                 }
             }
-            Environment.SetEnvironmentVariable("CLIPBOARD_IP", ip);
-            //Console.WriteLine("myIP:" + ip);
-            string appName = Environment.GetEnvironmentVariable("APPSIMULATOR_APP_NAME");
-            string redisServer = Environment.GetEnvironmentVariable("REDIS_SERVER_IP");
-            label1.Text = " form:" + ip + " >> to:" + redisServer;
+            label1.Text = "将从 " + ip + " >> 传送到Redis:" + this.redisServerIP;
             return ip;
         }
 
-        /// <summary>
-        /// Adds a clipboard history to the clipboard history list.
-        /// </summary>
+        public string TimeStampToStr(Int64 timeStamp)
+        {
+            DateTime start = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1));
+            long mTime = long.Parse(timeStamp.ToString() + "0000");
+            TimeSpan toNow = new TimeSpan(mTime);
+            //return start.Add(toNow).ToString("yyyy/MM/dd HH:mm:ss ffff");
+            return start.Add(toNow).ToString("HH:mm:ss ffff");
+        }
+
         private void AddClipBoardEntry(Int64 timeStamp, string timerNo)
         {
-            Console.WriteLine("<<timerNo>> " + timerNo);
-            Console.WriteLine("<<timeStamp>> " + timeStamp.ToString());
             if (Clipboard.ContainsText())
             {
+                string strTimeStamp = TimeStampToStr(timeStamp);
                 string clipboardText = Clipboard.GetText();
                 if (!String.IsNullOrEmpty(clipboardText))
                 {
                     if (clipboardText.Contains("http"))
                     {
-                        ///* syq
                         clipboardText = clipboardText.Substring(clipboardText.LastIndexOf("http"));
                         try
                         {
-                            string appName = Environment.GetEnvironmentVariable("APPSIMULATOR_APP_NAME");
-                            //Console.WriteLine("<<appName>> " + appName);
-                            string redisServerIP = Environment.GetEnvironmentVariable("REDIS_SERVER_IP");
-                            RedisClient Client = new RedisClient(redisServerIP, 6379);
+                            Console.WriteLine("<<timerNo>> " + timerNo + "<<timeStamp>> " + strTimeStamp + "<<url>> " + clipboardText);
+                            RedisClient Client = new RedisClient(this.redisServerIP, 6379);
                             Client.ChangeDb(11);
                             Client.AddItemToSet("devices:" + this.localIP + ":" + timerNo, clipboardText);
                             Client.AddItemToSet("devices:" + this.localIP + "_org:" + timerNo, clipboardText);
-                            // Client.AddItemToList("devices:" + appName + ":" + this.myIP + "_org", timeStamp.ToString());
                             clipboardHistoryList.Items.Insert(0, clipboardText);
+                            label1.Text = "从 " + this.localIP + " 传送到Redis： " + this.redisServerIP + " (" + timerNo + ")";
                             this.copyCnt++;
                         }
                         catch (Exception e)
@@ -200,8 +195,8 @@ namespace AppShareClip
                             Console.WriteLine(e);
                         }
 
-                        toolStripStatusLabel.Text = "copy success: " + this.copyCnt.ToString() + " failure: " + this.copyErrorCnt.ToString();
-                        toolStripStatusLabel.Text += " times: " + (DateTime.Now - startTime).ToString().Substring(0,8);
+                        toolStripStatusLabel.Text = "Copy成功：" + this.copyCnt.ToString() + " 个，失败：" + this.copyErrorCnt.ToString() +
+                            " 个, 耗时: " + (DateTime.Now - this.startTime).ToString().Substring(0, 8);
                         deleteButton.Enabled = true;
                     }
                 }
@@ -213,12 +208,6 @@ namespace AppShareClip
         }
 
 
-        /// <summary>
-        /// Clears the clipboard history list.
-        /// </summary>
-        /// <remarks>
-        /// The current clipboard content is preserved.
-        /// </remarks>
         private void ClearClipboardHistory()
         {
             DialogResult dialogResult = MessageBox.Show("Are you sure you want to clear the clipboard history",
@@ -227,26 +216,15 @@ namespace AppShareClip
             {
                 clipboardHistoryList.ClearSelected();
                 clipboardHistoryList.Items.Clear();
-                toolStripStatusLabel.Text = "Clipboard history was cleared.";
+                toolStripStatusLabel.Text = "剪贴板历史信息将被清空.";
             }
         }
 
-        /// <summary>
-        /// Displays any ExternalException in an error box.
-        /// </summary>
-        /// <param name="e"></param>
         public void HandleExternalException(ExternalException e)
         {
             MessageBox.Show(e.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        /// <summary>
-        /// In the clipboard history list, selects the entry that is below the one that is currently selected.
-        /// </summary>
-        /// <remarks>
-        /// The list 'loops' meaning thet if the entry that is currently selected is the last one, the first one
-        /// will be selected.
-        /// </remarks>
         private void GoDownList()
         {
             if (clipboardHistoryList.Items.Count > 1)
@@ -262,13 +240,6 @@ namespace AppShareClip
             }
         }
 
-        /// <summary>
-        /// In the clipboard history list, selects the entry that is above the one that is currently selected.
-        /// </summary>
-        /// <remarks>
-        /// The list 'loops' meaning thet if the entry that is currently selected is the first one, the last one
-        /// will be selected.
-        /// </remarks>
         private void GoUpList()
         {
             if (clipboardHistoryList.Items.Count > 1)
@@ -285,9 +256,6 @@ namespace AppShareClip
             }
         }
 
-        /// <summary>
-        /// Selects the last entry of the clipboard history list. Generally useful when the 'End' key is pressed
-        /// </summary>
         private void SelectLastEntry()
         {
             if (clipboardHistoryList.Items.Count > 0)
@@ -301,9 +269,6 @@ namespace AppShareClip
             }
         }
 
-        /// <summary>
-        /// Selects the first entry of the clipboard history list. Generally useful when the 'Home' key is pressed
-        /// </summary>
         private void SelectFirstEntry()
         {
             if (clipboardHistoryList.Items.Count > 0)
@@ -317,9 +282,6 @@ namespace AppShareClip
             }
         }
 
-        /// <summary>
-        /// Update the status bar entry label to show which entry is selected in the clipboard history list
-        /// </summary>
         private void UpdateStatusEntryLabel()
         {
             int selectedIndex = clipboardHistoryList.SelectedIndex;
@@ -329,7 +291,7 @@ namespace AppShareClip
             }
             else
             {
-                toolStripEntryLabel.Text = "No entry selected";
+                toolStripEntryLabel.Text = "没有选择任何信息";
             }
         }
 
@@ -337,9 +299,9 @@ namespace AppShareClip
 
         private void QuitMenuItem_Click(object sender, EventArgs e)
         {
-            toolStripStatusLabel.Text = "Clearing clipboard history...";
+            toolStripStatusLabel.Text = "清空剪贴板历史信息";
             ClearClipboardHistory();
-            toolStripStatusLabel.Text = "Exiting...";
+            toolStripStatusLabel.Text = "退出 ...";
             AppShareClipIcon.Dispose();
             Environment.Exit(0);
         }
@@ -394,10 +356,6 @@ namespace AppShareClip
             }
         }
 
-        /// <summary>
-        /// If the user clicks the "X" in the window frame, 'reallyQuit' is going to be false;
-        /// hence, AppShareClip will be sent to tray.
-        /// </summary>
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (!reallyQuit)
