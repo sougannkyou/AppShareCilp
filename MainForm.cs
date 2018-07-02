@@ -194,10 +194,12 @@ namespace AppShareClip
                             this.copyErrorCnt++;
                             Console.WriteLine(e);
                         }
-
-                        toolStripStatusLabel.Text = "Copy成功：" + this.copyCnt.ToString() + " 个，失败：" + this.copyErrorCnt.ToString() +
-                            " 个, 耗时: " + (DateTime.Now - this.startTime).ToString().Substring(0, 8);
-                        deleteButton.Enabled = true;
+                        finally
+                        {
+                            toolStripStatusLabel.Text = "Copy成功：" + this.copyCnt.ToString() + " 个，失败：" + this.copyErrorCnt.ToString() +
+                                                        " 个, 耗时: " + (DateTime.Now - this.startTime).ToString().Substring(0, 8);
+                            deleteButton.Enabled = true;
+                        }
                     }
                 }
             }
