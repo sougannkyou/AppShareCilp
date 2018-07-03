@@ -155,7 +155,7 @@ namespace AppShareClip
                     break;
                 }
             }
-            */
+            //*/
             string ip = Environment.GetEnvironmentVariable("APPSIMULATOR_IP");
             label1.Text = "将从 " + ip + " >> 传送到Redis:" + this.redisServerIP;
             return ip;
