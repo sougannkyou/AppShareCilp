@@ -45,17 +45,17 @@ namespace AppShareClip
         DateTime startTime = DateTime.Now;
 
 
-        public string GetTimerNo()
+        public string GetTaskConf()
         {
-            string timerNo = File.ReadAllText(this.workPath + "\\Controller\\timerNo.conf");
+            string taskConf = File.ReadAllText(this.workPath + "\\cmd\\task.conf");
 
             TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
             Int64 timeStamp = Convert.ToInt64(ts.TotalMilliseconds);
             DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1));
             long mTime = long.Parse(timeStamp + "0000");
             TimeSpan toNow = new TimeSpan(mTime);
-            Console.WriteLine("<<GetTimerNo>>" + startTime.Add(toNow).ToString("HH:mm:ss ffff"));
-            return timerNo;
+            Console.WriteLine("<<GetTaskConf>>" + startTime.Add(toNow).ToString("HH:mm:ss ffff"));
+            return taskConf;
         }
 
         public MainForm()
@@ -114,8 +114,8 @@ namespace AppShareClip
                     if (!isCopying)
                     {
                         Int64 timeStamp = GetTimeStamp();
-                        string timerNo = GetTimerNo();
-                        AddClipBoardEntry(timeStamp,timerNo);
+                        string taskConf = GetTaskConf();
+                        AddClipBoardEntry(timeStamp, taskConf);
                     }
                     StringBuilder sb = new StringBuilder(256);
                     if (GetWindowText(m.HWnd, sb, 256) > 0)
@@ -170,7 +170,7 @@ namespace AppShareClip
             return start.Add(toNow).ToString("HH:mm:ss ffff");
         }
 
-        private void AddClipBoardEntry(Int64 timeStamp, string timerNo)
+        private void AddClipBoardEntry(Int64 timeStamp, string taskConf)
         {
             if (Clipboard.ContainsText())
             {
@@ -183,13 +183,13 @@ namespace AppShareClip
                         clipboardText = clipboardText.Substring(clipboardText.LastIndexOf("http"));
                         try
                         {
-                            Console.WriteLine("<<timerNo>> " + timerNo + "<<timeStamp>> " + strTimeStamp + "<<url>> " + clipboardText);
+                            Console.WriteLine("<<taskConf>> " + taskConf + "<<timeStamp>> " + strTimeStamp + "<<url>> " + clipboardText);
                             RedisClient Client = new RedisClient(this.redisServerIP, 6379);
                             Client.ChangeDb(11);
-                            Client.AddItemToSet("devices:" + this.localIP + ":" + timerNo, clipboardText);
-                            Client.AddItemToSet("devices:" + this.localIP + "_org:" + timerNo, clipboardText);
+                            Client.AddItemToSet("devices:" + this.localIP + ":" + taskConf, clipboardText);
+                            Client.AddItemToSet("devices:" + this.localIP + "_org:" + taskConf, clipboardText);
                             clipboardHistoryList.Items.Insert(0, clipboardText);
-                            label1.Text = "从 " + this.localIP + " 传送到Redis： " + this.redisServerIP + " (" + timerNo + ")";
+                            label1.Text = "从 " + this.localIP + " 传送到Redis： " + this.redisServerIP + " (" + taskConf + ")";
                             this.copyCnt++;
                         }
                         catch (Exception e)
