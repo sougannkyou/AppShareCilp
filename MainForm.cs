@@ -188,6 +188,8 @@ namespace AppShareClip
                             Client.ChangeDb(11);
                             Client.AddItemToSet("devices:" + this.localIP + ":" + taskConf, clipboardText);
                             Client.AddItemToSet("devices:" + this.localIP + "_org:" + taskConf, clipboardText);
+
+                            Client.AppendToValue("devices:" + this.localIP + "_lastTime:" + taskConf, timeStamp.ToString());
                             clipboardHistoryList.Items.Insert(0, clipboardText);
                             label1.Text = "从 " + this.localIP + " 传送到Redis： " + this.redisServerIP + " (" + taskConf + ")";
                             this.copyCnt++;
