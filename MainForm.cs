@@ -47,7 +47,7 @@ namespace AppShareClip
 
         public string GetTaskConf()
         {
-            string taskConf = File.ReadAllText(this.workPath + "\\cmd\\task.conf");
+            string taskConf = File.ReadAllText(this.workPath + "\\cmd\\app.conf");
 
             TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
             Int64 timeStamp = Convert.ToInt64(ts.TotalMilliseconds);
@@ -189,7 +189,7 @@ namespace AppShareClip
                             Client.AddItemToSet("devices:" + this.localIP + ":" + taskConf, clipboardText);
                             Client.AddItemToSet("devices:" + this.localIP + "_org:" + taskConf, clipboardText);
 
-                            Client.AppendToValue("devices:" + this.localIP + "_lastTime:" + taskConf, timeStamp.ToString());
+                            // Client.AppendToValue("devices:" + this.localIP + "_lastTime:" + taskConf, timeStamp.ToString());
                             clipboardHistoryList.Items.Insert(0, clipboardText);
                             label1.Text = "从 " + this.localIP + " 传送到Redis： " + this.redisServerIP + " (" + taskConf + ")";
                             this.copyCnt++;
@@ -210,15 +210,15 @@ namespace AppShareClip
             }
             else
             {
-                toolStripStatusLabel.Text = "History entry was not added because it was null or empty";
+                toolStripStatusLabel.Text = "历史信息为空";
             }
         }
 
 
         private void ClearClipboardHistory()
         {
-            DialogResult dialogResult = MessageBox.Show("Are you sure you want to clear the clipboard history",
-                                                        "Clear clipboard history?", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            DialogResult dialogResult = MessageBox.Show("确认清除历史信息",
+                                                        "清除历史信息?", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (dialogResult == DialogResult.Yes)
             {
                 clipboardHistoryList.ClearSelected();
